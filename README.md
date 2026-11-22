@@ -35,6 +35,26 @@ The solution combines:
 
 The objective is to demonstrate how generative AI can move beyond answering questions and participate in controlled, tool-driven enterprise workflows.
 
+### Current implementation status
+
+The core conversational and ticket-creation workflow has been implemented and tested.
+
+| Component | Current status |
+|---|---|
+| Azure AI Foundry project | Created |
+| Foundry specialist agent | Created and tested |
+| Azure AI Search knowledge base | Configured and tested |
+| Copilot Studio agent | Created |
+| Copilot Studio–Foundry connection | Connected and tested |
+| Dataverse IT Support Ticket table | Created |
+| Power Automate ticket creation flow | Implemented and tested |
+| Copilot Studio ticket-creation integration | Tested end to end |
+| Python MCP server | Implemented and locally tested |
+| Remote MCP hosting | Not implemented |
+| Cloud agent–MCP connection | Not implemented |
+
+**Important:** The MCP implementation currently runs locally and uses synthetic service data and SQLite ticket storage. It is not yet connected to the Dataverse ticket table or the cloud-based agent.
+
 ## Problem Statement
 
 Enterprise IT support teams regularly receive repetitive requests involving:
@@ -55,7 +75,9 @@ This project addresses that gap by connecting conversational AI with specialist 
 
 The system uses a central Copilot Studio agent as the employee-facing interface.
 
-The agent coordinates with an Azure AI Foundry specialist agent for technical troubleshooting, invokes MCP tools to retrieve operational information, and uses Power Automate to create support tickets in Dataverse.
+The agent coordinates with an Azure AI Foundry specialist agent for technical troubleshooting, and uses Power Automate to create support tickets in Dataverse.
+
+The separately implemented MCP server provides additional tools for service-status lookup and local ticket operations. Remote hosting and cloud-agent integration remain future work.
 
 The intended workflow is:
 
@@ -81,17 +103,64 @@ The agent should use connected tools for information that requires live retrieva
              +--------------+---------------+
              |              |               |
              v              v               v
-       AZURE AI         MCP SERVER      POWER AUTOMATE
-       FOUNDRY              |               |
+        AZURE AI        POWER AUTOMATE   FUTURE MCP
+        FOUNDRY              |           CONNECTION
              |              |               |
-             v         +----+------+        v
-       Specialist      |           |    Ticket Creation
-       Troubleshooting |           |       Workflow
-       Agent            v           v        |
-                    Service     Ticket      v
-                    Status      Status   DATAVERSE
-                    Tool        Tool      Support Tickets
+             v              v               |
+        Specialist       Ticket Creation    |
+        Troubleshooting  Workflow            |
+        Agent                |               |
+             |               v               |
+             |           DATAVERSE           |
+             |        IT Support Tickets     |
+             |                               |
+             +-------------------------------+
+                                             |
+                                    PYTHON MCP SERVER
+                                             |
+                                  +----------+----------+
+                                  |          |          |
+                                  v          v          v
+                               Service    Ticket     Ticket
+                               Status     Lookup    Creation
+                               Tool       Tool       Tool
 ```
+
+The diagram represents the overall design. The MCP server is currently a separate local component and is not connected to the cloud agent.
+
+### Azure AI Foundry Project and Agent
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ace0525c-23e1-4ebb-82b7-5577eafddc04" alt="Azure AI Foundry screenshot 1" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/946c8c8d-6807-41a9-aeec-bb9d80ec13fa" alt="Azure AI Foundry screenshot 2" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/764c4e10-179f-43e5-ad72-650db40d75c3" alt="Azure AI Foundry screenshot 3" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c418e2cf-b017-45f4-a3d3-51ba01a83dae" alt="Azure AI Foundry screenshot 4" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5b37c6c3-d545-41f8-a8f2-05ed41d2e53c" alt="Azure AI Foundry screenshot 5" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ef6d4238-00a0-4fd2-9779-6328fb847fc8" alt="Azure AI Foundry screenshot 6" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/81e3e772-9e38-4464-b067-ecda6f21487c" alt="Azure AI Foundry screenshot 7" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6b89dfb3-f130-45dc-9df7-9fbabcc8d295" alt="Azure AI Foundry screenshot 8" width="100%">
+</p>
 
 ### Component Responsibilities
 
@@ -145,6 +214,15 @@ Azure AI Foundry provides the specialist troubleshooting agent.
 
 The agent is designed to use approved IT support knowledge and instructions to provide consistent technical guidance.
 
+### Implemented configuration
+
+- Foundry project: `RG_KiranAgent-project`
+- Specialist agent: `EnterpriseSupportAgent`
+- Model: `gpt-5-mini`
+- Knowledge source: Azure AI Search-backed support knowledge base.
+- Knowledge document: `Enterprise Connectivity Support Handbook`.
+- Search service: `kiranagentfoundrysearch`.
+
 ### Intended capabilities
 
 - Analyse common IT connectivity problems.
@@ -153,7 +231,7 @@ The agent is designed to use approved IT support knowledge and instructions to p
 - Recommend safe troubleshooting steps.
 - Identify restricted operations.
 - Recognize when a problem requires IT administrator intervention.
-- Return structured troubleshooting guidance to the main agent.
+- Return troubleshooting guidance to the main agent.
 
 ### Knowledge-grounded troubleshooting
 
@@ -165,6 +243,18 @@ Its responses should distinguish between:
 - Information that requires further investigation.
 - Actions that require administrator approval.
 - Situations that should be escalated.
+
+### Knowledge base implementation
+
+The Azure AI Search knowledge base was configured and tested with the synthetic Enterprise Connectivity Support Handbook.
+
+The Foundry agent has been tested with connectivity scenarios, including:
+
+- Laptop connected to Wi-Fi but unable to access the internet.
+- Whether the issue affects one device or multiple devices.
+- Requesting network adapter details using `ipconfig /all`.
+- Explaining the significance of an APIPA address such as `169.254.x.x`.
+- Refusing to invent an approved corporate DNS address.
 
 ## 3. Multi-Agent Collaboration
 
@@ -197,15 +287,27 @@ Presents the instructions to the employee and determines whether further assista
 
 This separation keeps employee interaction and specialist troubleshooting responsibilities distinct.
 
+### Implemented delegation
+
+The Copilot Studio agent has a connected Foundry specialist agent.
+
+Technical requests involving networking, Wi-Fi, LAN, DHCP, IP addressing, DNS, VPN and Windows network diagnostics are delegated to the specialist agent.
+
+The delegation was tested through Copilot Studio.
+
 ## 4. Model Context Protocol (MCP) Integration
 
-The project uses MCP to expose external capabilities to the AI agent through standardized tool interfaces.
+The project uses MCP to expose external capabilities to an AI agent through standardized tool interfaces.
 
-The MCP server is designed to provide the following tools.
+A Python MCP server has been implemented using the FastMCP SDK.
 
-### Tool 1: get_service_status
+### Implemented MCP tools
 
-**Purpose:** Retrieve the current availability of an IT service.
+The current implementation exposes three tools.
+
+### Tool 1: `check_service_status`
+
+**Purpose:** Retrieve service availability information from the local demonstration dataset.
 
 Example input:
 
@@ -215,15 +317,9 @@ Example input:
 }
 ```
 
-Example response:
+The tool reads service information from:
 
-```json
-{
-  "service": "VPN",
-  "status": "Operational",
-  "message": "VPN service is currently operational."
-}
-```
+`mcp-server/data/services.json`
 
 Expected capabilities:
 
@@ -231,13 +327,13 @@ Expected capabilities:
 - Check email service availability.
 - Check network service availability.
 - Return structured service information.
-- Handle unknown services and unavailable status sources safely.
+- Handle unknown services safely.
 
-The initial implementation may use controlled demonstration data. It must not represent simulated values as actual production monitoring data.
+**Implementation limitation:** The current service information is synthetic. It is not connected to a live enterprise monitoring platform.
 
-### Tool 2: get_ticket_status
+### Tool 2: `get_ticket_status`
 
-**Purpose:** Retrieve the current status of an existing IT support ticket.
+**Purpose:** Retrieve the status of an existing ticket from the local SQLite database.
 
 Example input:
 
@@ -247,27 +343,82 @@ Example input:
 }
 ```
 
-Example response:
+Expected capabilities:
 
-```json
-{
-  "ticket_id": "INC-1001",
-  "status": "In Progress",
-  "priority": "High",
-  "category": "VPN",
-  "message": "Your support request is currently being investigated."
-}
-```
+- Retrieve locally stored ticket details.
+- Return ticket status.
+- Display available ticket information.
+- Handle invalid or missing ticket references.
+
+**Implementation limitation:** The current implementation uses local SQLite. It does not retrieve records from the Dataverse `IT Support Ticket` table.
+
+Ticket access must be validated using an appropriate identity and authorization mechanism before enterprise deployment.
+
+### Tool 3: `create_support_ticket`
+
+**Purpose:** Create a support ticket in the local SQLite database.
+
+The tool accepts:
+
+- Issue summary.
+- Description.
+- Category.
+- Priority.
+- Affected service.
+- Location.
 
 Expected capabilities:
 
-- Retrieve ticket details.
-- Return ticket status.
-- Display ticket priority and category.
-- Handle invalid or missing ticket references.
-- Avoid exposing tickets to unauthorized employees.
+- Validate required input.
+- Reject invalid priority values.
+- Reject password-like content.
+- Generate a ticket reference.
+- Store the ticket in SQLite.
+- Return the created ticket information.
 
-Ticket access must be validated using an appropriate identity and authorization mechanism.
+**Implementation limitation:** This is a separate local ticket store. The cloud ticket-creation workflow uses Power Automate and Dataverse instead.
+
+### MCP server implementation
+
+Repository location:
+
+`mcp-server/`
+
+Main files:
+
+| File | Responsibility |
+|---|---|
+| `server.py` | FastMCP server and tool registration |
+| `support_data.py` | Support data and ticket operations |
+| `data/services.json` | Synthetic service information |
+| `tests/test_support_data.py` | Automated support-data tests |
+| `requirements.txt` | Python dependencies |
+| `README.md` | MCP setup and usage documentation |
+
+### MCP transports tested
+
+- STDIO transport.
+- Streamable HTTP transport.
+
+Local Streamable HTTP endpoint:
+
+`http://127.0.0.1:8000/mcp`
+
+The server was tested locally using MCP Inspector.
+
+### Automated test results
+
+The following test cases passed:
+
+| Test | Result |
+|---|---|
+| Create and retrieve a ticket | Passed |
+| Reject invalid priority | Passed |
+| Return known synthetic service data | Passed |
+| Reject password-like content | Passed |
+| Reject unknown service | Passed |
+
+**MCP integration status:** The MCP server is implemented and locally tested. It has not yet been remotely hosted or connected to the cloud-based Copilot Studio agent.
 
 ### MCP integration objectives
 
@@ -283,43 +434,99 @@ Ticket access must be validated using an appropriate identity and authorization 
 
 Power Automate handles the business workflow for creating IT support tickets.
 
-### Flow: Create_IT_Support_Ticket
+### Implemented flow: `Create_IT_Support_Ticket`
 
-**Trigger:** Agent invokes the configured Power Automate action.
+**Trigger:** When an agent calls the flow.
 
-### Expected input parameters
+### Actual input parameters
 
-| Parameter | Description |
-|---|---|
-| Employee Name | Name of the employee |
-| Employee Email | Employee contact address |
-| Issue Description | Description of the technical problem |
-| Category | VPN, Network, Email or Application |
-| Priority | Low, Medium, High or Critical |
+| Parameter | Internal name | Description |
+|---|---|---|
+| Ticket Subject | `text` | Short issue title |
+| Description | `text_1` | Description of the technical problem |
+| Category | `text_2` | Support category |
+| Priority | `text_3` | Ticket priority |
+| Affected Service | `text_4` | Impacted service or application |
+| Location | `text_5` | Employee location |
 
-### Workflow
+### Supported categories
 
-1. Receive the support request details.
-2. Validate required inputs.
-3. Check the request information.
-4. Create a support ticket record in Dataverse.
-5. Generate or retrieve the ticket reference.
-6. Return the creation result to Copilot Studio.
-7. Display the ticket reference and status to the employee.
+- Network
+- VPN
+- Email
+- Application
+- Hardware
+- Software
+- Access
+- Other
 
-### Expected output
+### Supported priorities
+
+- Low
+- Medium
+- High
+- Critical
+
+### Implemented workflow
+
+1. Receive the support request details from Copilot Studio.
+2. Initialize request category and priority variables.
+3. Map category and priority text values to Dataverse choice values.
+4. Create a support ticket row in Dataverse.
+5. Generate a ticket reference using the `INC-` prefix.
+6. Return the creation result, reference and status to Copilot Studio.
+7. Display the actual ticket reference and status to the employee.
+
+### Ticket reference generation
+
+The flow generates a reference using a GUID-based expression:
+
+```powerautomate
+concat('INC-', toUpper(substring(replace(guid(),'-',''),0,8)))
+```
+
+### Actual workflow output
+
+The flow returns the creation result, ticket reference, status and confirmation message.
+
+Example response structure:
 
 ```json
 {
   "success": true,
-  "ticket_id": "INC-1002",
+  "ticket_reference": "INC-99BA23AF",
   "status": "New",
-  "priority": "High",
-  "message": "Your IT support ticket has been created successfully."
+  "message": "Your support ticket has been created successfully."
 }
 ```
 
-The actual ticket reference and status must come from the workflow execution result.
+The reference above is an example from a successful project test, not a fixed value.
+
+### End-to-end validation
+
+The following scenario was successfully tested through Copilot Studio:
+
+**Employee issue:**
+
+"My laptop connects to Wi-Fi, but I cannot access the internet. I want to create an IT support ticket."
+
+The agent:
+
+1. Delegated technical troubleshooting to the Foundry specialist.
+2. Gathered the ticket information.
+3. Asked for the priority.
+4. Collected the employee's location.
+5. Summarized the ticket details.
+6. Asked the employee to confirm.
+7. Invoked the Power Automate flow after confirmation.
+8. Created the Dataverse record.
+9. Returned the generated ticket reference and status.
+
+Successful response:
+
+> Your support ticket has been created successfully. The ticket reference is INC-99BA23AF, and its current status is New.
+
+The Dataverse record was verified after the successful execution.
 
 The agent should obtain employee confirmation before submitting a new ticket.
 
@@ -327,19 +534,47 @@ The agent should obtain employee confirmation before submitting a new ticket.
 
 Dataverse provides structured storage for IT support requests.
 
-### Proposed ticket fields
+### Implemented table: `IT Support Ticket`
 
-| Column | Data type |
-|---|---|
-| Ticket Reference | Text |
-| Employee Name | Text |
-| Employee Email | Email/Text |
-| Issue Description | Multiple lines of text |
-| Category | Choice |
-| Priority | Choice |
-| Status | Choice |
-| Created On | Date and time |
-| Modified On | Date and time |
+The table was created in the `Enterprise Support Intelligence` solution.
+
+### Actual table columns
+
+| Column | Data type | Purpose |
+|---|---|---|
+| Ticket Subject | Single line of text | Primary ticket title |
+| Ticket Reference | Single line of text | Generated employee-facing reference |
+| Description | Multiple lines of text | Issue details |
+| Category | Choice | Support category |
+| Priority | Choice | Ticket priority |
+| Affected Service | Single line of text | Impacted service |
+| Location | Single line of text | Employee location |
+| Status | Choice | Ticket lifecycle status |
+
+### Category choices
+
+- Network
+- VPN
+- Email
+- Application
+- Hardware
+- Software
+- Access
+- Other
+
+### Priority choices
+
+- Low
+- Medium
+- High
+- Critical
+
+### Status choices
+
+- New
+- In Progress
+- Resolved
+- Closed
 
 ### Ticket lifecycle
 
@@ -356,7 +591,7 @@ Dataverse provides structured storage for IT support requests.
        Closed
 ```
 
-The initial demonstration can use a simplified ticket lifecycle. Production implementations should also consider reassignment, cancellation, reopening and audit history.
+The initial demonstration uses a simplified ticket lifecycle. Production implementations should also consider reassignment, cancellation, reopening and audit history.
 
 ### Data management objectives
 
@@ -366,52 +601,82 @@ The initial demonstration can use a simplified ticket lifecycle. Production impl
 - Apply appropriate access controls.
 - Return only authorized ticket information.
 
+### Power Platform solution
+
+The following components were added to the `Enterprise Support Intelligence` solution:
+
+- Copilot Studio agent components.
+- `IT Support Ticket` Dataverse table.
+- `Create_IT_Support_Ticket` Power Automate flow.
+
+The solution was exported and unpacked locally for version control.
+
+Repository location:
+
+`power-platform/EnterpriseSupportIntelligence/`
+
+The exported solution contains its metadata and component folders, including available assets, workflows, bot components and bot definitions.
+
+The exported solution does not package the Azure AI Foundry project, model deployment, Azure AI Search service or the separately maintained MCP server.
+
 ---
 
 # End-to-End Use Cases
 
 ## Use Case 1: VPN Troubleshooting
 
-**Employee:** My VPN is not connecting.
+**Employee:**
+
+"My VPN is not connecting."
 
 Expected workflow:
 
 1. Copilot Studio understands the issue.
 2. The Foundry specialist agent provides knowledge-grounded troubleshooting.
 3. The agent asks relevant questions.
-4. The MCP service tool checks VPN availability.
+4. The agent checks service information if an appropriate connected tool is available.
 5. The agent combines the results and provides troubleshooting instructions.
 6. If the problem remains unresolved, the agent offers ticket creation.
 
 ## Use Case 2: Check Service Availability
 
-**Employee:** Is the VPN service currently available?
+**Employee:**
+
+"Is the VPN service currently available?"
 
 Expected workflow:
 
 1. Identify the requested service.
-2. Invoke `get_service_status`.
+2. Invoke `check_service_status` when the MCP tool is connected.
 3. Retrieve the tool response.
 4. Present the returned service status.
 5. Explain if the status cannot be verified.
 
+The current local tool returns synthetic demonstration data. It does not provide live production service monitoring.
+
 ## Use Case 3: Track an Existing Ticket
 
-**Employee:** What is happening with ticket INC-1001?
+**Employee:**
+
+"What is happening with ticket INC-1001?"
 
 Expected workflow:
 
 1. Extract the ticket reference.
-2. Invoke `get_ticket_status`.
+2. Invoke `get_ticket_status` when the appropriate tool is connected.
 3. Validate that the employee is authorized to view the ticket.
 4. Retrieve the ticket information.
 5. Return the status and relevant details.
 
+The current MCP implementation looks up tickets in local SQLite. Dataverse ticket lookup through MCP is future work.
+
 ## Use Case 4: Create a New Support Ticket
 
-**Employee:** My email access is still not working. Raise a ticket.
+**Employee:**
 
-Expected workflow:
+"My email access is still not working. Raise a ticket."
+
+Implemented workflow:
 
 1. Understand the unresolved issue.
 2. Gather required ticket details.
@@ -421,9 +686,13 @@ Expected workflow:
 6. Create the Dataverse record.
 7. Return the actual ticket reference and status.
 
+This workflow has been successfully tested end to end.
+
 ## Use Case 5: Restricted Technical Operation
 
-**Employee:** Should I restart the company firewall?
+**Employee:**
+
+"Should I restart the company firewall?"
 
 Expected behavior:
 
@@ -467,8 +736,11 @@ The agent follows explicit IT support safety restrictions.
 | Conversational AI | Microsoft Copilot Studio | Employee-facing agent |
 | AI Agent Platform | Azure AI Foundry | Specialist AI agent |
 | Agent Architecture | Multi-Agent Orchestration | Agent collaboration |
+| Knowledge Retrieval | Azure AI Search | Support documentation retrieval |
 | Tool Integration | Model Context Protocol | External tool access |
 | Backend | Python | MCP server implementation |
+| MCP Framework | FastMCP | MCP server and tool implementation |
+| Local Persistence | SQLite | Local MCP ticket storage |
 | Workflow Automation | Microsoft Power Automate | Ticket creation |
 | Data Platform | Microsoft Dataverse | Support ticket storage |
 | Cloud Platform | Microsoft Azure | Cloud services and identity |
@@ -480,51 +752,33 @@ The agent follows explicit IT support safety restrictions.
 # Repository Structure
 
 ```text
-azure-ai-foundry-enterprise-support-agent/
+Azure-AI-Foundry-Enterprise-Support-Agent/
 │
-├── copilot-studio/
-│   ├── README.md
-│   ├── agent-instructions.md
-│   └── conversation-scenarios.md
-│
-├── azure-ai-foundry/
-│   ├── README.md
-│   ├── agent-instructions.md
-│   └── knowledge/
-│       └── it-support-handbook.md
+├── README.md
 │
 ├── mcp-server/
-│   ├── server.py
-│   ├── tools/
-│   │   ├── service_status.py
-│   │   └── ticket_status.py
+│   ├── data/
+│   │   └── services.json
+│   ├── tests/
+│   │   └── test_support_data.py
+│   ├── README.md
 │   ├── requirements.txt
-│   └── README.md
+│   ├── server.py
+│   └── support_data.py
 │
-├── power-automate/
-│   ├── README.md
-│   └── create-it-support-ticket.md
-│
-├── dataverse/
-│   ├── README.md
-│   └── ticket-schema.md
-│
-├── docs/
-│   ├── architecture.md
-│   ├── use-cases.md
-│   ├── security.md
-│   └── screenshots/
-│
-├── tests/
-│   ├── mcp-tool-tests/
-│   └── integration-tests/
-│
-├── .env.example
-├── .gitignore
-└── README.md
+└── power-platform/
+    └── EnterpriseSupportIntelligence/
+        ├── Assets/
+        ├── Workflows/
+        ├── botcomponents/
+        ├── bots/
+        ├── [Content_Types].xml
+        ├── customizations.xml
+        ├── solution.xml
+        └── README.md
 ```
 
-This is the planned documentation and source-code organization. Files should be added as their corresponding components are implemented.
+The repository currently contains the MCP server implementation and the unpacked Power Platform solution. Azure AI Foundry configuration and screenshots are maintained separately in the Azure environment and GitHub attachments.
 
 ---
 
@@ -546,9 +800,9 @@ Some Microsoft services require appropriate licensing, environment permissions a
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Keyrun1227/azure-ai-foundry-enterprise-support-agent.git
+git clone https://github.com/Keyrun1227/Azure-AI-Foundry-Enterprise-Support-Agent.git
 
-cd azure-ai-foundry-enterprise-support-agent
+cd Azure-AI-Foundry-Enterprise-Support-Agent
 ```
 
 ## 2. Configure the Azure AI Foundry Agent
@@ -561,65 +815,101 @@ cd azure-ai-foundry-enterprise-support-agent
 6. Test the agent using representative support scenarios.
 7. Configure the required identity and access permissions.
 
+The project implementation uses `RG_KiranAgent-project` and the specialist agent `EnterpriseSupportAgent`.
+
 ## 3. Configure Copilot Studio
 
-1. Create the Enterprise IT Support Agent.
-2. Add the main conversational instructions.
+1. Create or open the Enterprise IT Support Agent.
+2. Configure the main conversational instructions.
 3. Connect the Azure AI Foundry specialist agent through the supported connected-agent integration.
 4. Configure the appropriate orchestration behavior.
-5. Add the MCP server as a tool through the supported integration.
-6. Connect the Power Automate ticket creation action.
-7. Validate the complete conversation flow.
+5. Connect the Power Automate ticket creation action.
+6. Validate the complete conversation flow.
+
+The existing implementation connects Copilot Studio to the Foundry specialist agent and the ticket-creation flow.
+
+MCP remote integration is not yet configured.
 
 ## 4. Run the MCP Server
 
-Create and activate a virtual environment:
+Navigate to the MCP server directory:
+
+```bash
+cd mcp-server
+```
+
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Windows:
+Activate it on Windows:
 
-```bash
+```bat
 .venv\Scripts\activate
 ```
 
 Install dependencies:
 
 ```bash
-pip install -r mcp-server/requirements.txt
+pip install -r requirements.txt
 ```
 
-Run the server using the transport and startup command configured in its implementation.
+Run the automated tests:
 
-The MCP server must be reachable through an endpoint and transport supported by the chosen Copilot Studio integration.
+```bash
+python -m pytest -q
+```
+
+Start the server using the configured transport.
+
+For Streamable HTTP on Windows CMD:
+
+```bat
+set MCP_TRANSPORT=streamable-http
+python server.py
+```
+
+The local endpoint is:
+
+```text
+http://127.0.0.1:8000/mcp
+```
+
+The server also supports STDIO transport.
+
+The local MCP implementation is intended for development and validation. It is not a production deployment.
 
 ## 5. Configure Power Automate
 
+The `Create_IT_Support_Ticket` flow is included in the exported Power Platform solution.
+
 1. Open Power Automate.
-2. Create the `Create_IT_Support_Ticket` flow.
-3. Configure its supported trigger.
-4. Add input validation.
-5. Create a Dataverse row.
-6. Return the ticket reference and status.
-7. Connect the flow to Copilot Studio.
-8. Test successful and failed executions.
+2. Import or open the `Enterprise Support Intelligence` solution.
+3. Review the flow and its trigger inputs.
+4. Configure the required Dataverse connection.
+5. Verify the category and priority mappings.
+6. Confirm that the flow creates a Dataverse record.
+7. Confirm that the flow returns the ticket reference and status.
+8. Connect or verify the flow in Copilot Studio.
 
 ## 6. Configure Dataverse
 
-1. Create the IT Support Ticket table.
-2. Configure the ticket columns.
-3. Define appropriate choice values.
+The `IT Support Ticket` table is included in the exported solution.
+
+1. Import the solution into the intended environment.
+2. Verify the table and its columns.
+3. Verify the category, priority and status choices.
 4. Configure table permissions and security roles.
-5. Connect the table to the Power Automate workflow.
-6. Verify that tickets are created and retrieved correctly.
+5. Verify the connection used by Power Automate.
+6. Test ticket creation in a non-production environment.
 
 ---
 
 # Testing and Evaluation
 
-Testing should cover individual agent behavior, tool execution and end-to-end workflows.
+Testing covers individual agent behavior, tool execution and end-to-end workflows.
 
 ### Agent Evaluation
 
@@ -638,7 +928,7 @@ Testing should cover individual agent behavior, tool execution and end-to-end wo
 - Successful status retrieval.
 - Invalid ticket reference.
 - Existing ticket retrieval.
-- Unauthorized ticket access.
+- Password-like content rejection.
 - MCP connection failure.
 - Invalid tool input.
 
@@ -653,15 +943,29 @@ Testing should cover individual agent behavior, tool execution and end-to-end wo
 
 ### End-to-End Testing
 
-| Scenario | Expected result |
-|---|---|
-| VPN troubleshooting | Grounded troubleshooting guidance |
-| VPN status enquiry | Service status returned by MCP |
-| Ticket enquiry | Authorized ticket details returned |
-| New support request | Dataverse ticket created |
-| Restricted operation | Safe refusal and escalation |
-| MCP unavailable | Clear tool failure response |
-| Power Automate failure | No false ticket creation confirmation |
+| Scenario | Expected result | Implementation status |
+|---|---|---|
+| VPN troubleshooting | Grounded troubleshooting guidance | Tested |
+| Wi-Fi without internet | Specialist troubleshooting | Tested |
+| APIPA address explanation | Knowledge-grounded response | Tested |
+| Service availability lookup | Service status returned by MCP | Local tool tested |
+| Ticket enquiry | Ticket details returned from the relevant store | Local tool tested |
+| New support request | Dataverse ticket created | Tested end to end |
+| Restricted operation | Safe refusal and escalation | Safety instructions configured |
+| MCP unavailable | Clear tool failure response | Requires hosted integration testing |
+| Power Automate failure | No false ticket creation confirmation | Flow error handling should be validated further |
+
+### Automated MCP Test Results
+
+The local MCP support-data test suite contains five tests:
+
+- Ticket creation and retrieval.
+- Invalid priority rejection.
+- Known synthetic service lookup.
+- Password-like content rejection.
+- Unknown service rejection.
+
+All five tests passed during local validation.
 
 Evaluation results should be recorded with the corresponding test cases and execution evidence.
 
@@ -702,6 +1006,14 @@ These are illustrative configuration names. Actual environment variables must ma
 - Maintain appropriate audit records.
 - Use separate development and production configurations.
 
+### Current MCP security limitations
+
+The local MCP server does not yet provide production-grade authentication or authorization.
+
+It binds to localhost for local testing. Do not expose it directly to the public internet.
+
+Before remote hosting, implement appropriate authentication, authorization, transport security and access controls.
+
 ---
 
 # Monitoring and Observability
@@ -725,7 +1037,7 @@ Application Insights and Azure monitoring can be used where telemetry is configu
 
 # Development Roadmap
 
-The following roadmap describes the intended implementation scope.
+The following roadmap distinguishes completed implementation from remaining integration work.
 
 ### Phase 1 — AI Agent Foundation
 
@@ -736,36 +1048,52 @@ The following roadmap describes the intended implementation scope.
 - [x] Create the Copilot Studio Enterprise IT Support Agent.
 - [x] Configure its conversational instructions.
 - [x] Connect the Foundry specialist agent to Copilot Studio.
+- [x] Configure and test Azure AI Search knowledge retrieval.
+- [x] Test specialist delegation through Copilot Studio.
 
-### Phase 2 — MCP Integration
+### Phase 2 — MCP Server Development
 
-- [ ] Implement the Python MCP server.
-- [ ] Implement `get_service_status`.
-- [ ] Implement `get_ticket_status`.
-- [ ] Configure the supported MCP transport.
-- [ ] Connect MCP to Copilot Studio.
-- [ ] Validate tool execution and error handling.
+- [x] Implement the Python MCP server.
+- [x] Implement `check_service_status`.
+- [x] Implement `get_ticket_status`.
+- [x] Implement `create_support_ticket`.
+- [x] Configure STDIO transport.
+- [x] Configure Streamable HTTP transport.
+- [x] Test MCP tools using MCP Inspector.
+- [x] Add automated support-data tests.
+- [x] Validate input handling and error cases.
+- [ ] Deploy MCP server to an approved remote hosting environment.
+- [ ] Implement production-grade authentication and authorization.
+- [ ] Connect MCP to the cloud-based agent.
+- [ ] Replace synthetic service information with an approved monitoring integration.
+- [ ] Integrate MCP ticket operations with Dataverse.
 
 ### Phase 3 — Business Workflow Automation
 
-- [ ] Create the Dataverse IT Support Ticket table.
-- [ ] Build the Power Automate ticket creation flow.
-- [ ] Configure request validation.
-- [ ] Return the ticket reference and creation status.
-- [ ] Connect the workflow to Copilot Studio.
-- [ ] Validate ticket creation and retrieval.
+- [x] Create the Dataverse IT Support Ticket table.
+- [x] Configure ticket columns and choice values.
+- [x] Build the Power Automate ticket creation flow.
+- [x] Configure request inputs and category/priority mappings.
+- [x] Generate the ticket reference.
+- [x] Return the ticket reference and creation status.
+- [x] Connect the workflow to Copilot Studio.
+- [x] Validate ticket creation and Dataverse record creation.
+- [x] Export the Power Platform solution.
 
 ### Phase 4 — End-to-End Validation
 
-- [ ] Test VPN troubleshooting.
-- [ ] Test service availability checks.
-- [ ] Test ticket status retrieval.
-- [ ] Test new ticket creation.
-- [ ] Validate safety restrictions.
-- [ ] Test authorization and failure scenarios.
-- [ ] Run agent evaluations.
-- [ ] Configure a user-facing channel.
-- [ ] Complete deployment and documentation.
+- [x] Test VPN troubleshooting.
+- [x] Test Wi-Fi connectivity troubleshooting.
+- [x] Test knowledge-grounded APIPA explanation.
+- [x] Test Foundry delegation.
+- [x] Test local MCP service lookup.
+- [x] Test local MCP ticket operations.
+- [x] Test support ticket creation through Copilot Studio.
+- [x] Verify the created Dataverse record.
+- [ ] Test remote MCP integration.
+- [ ] Test authorization across employee-specific tickets.
+- [ ] Run broader agent evaluations.
+- [ ] Complete production deployment and documentation.
 
 ---
 
@@ -773,11 +1101,29 @@ The following roadmap describes the intended implementation scope.
 
 This repository documents a practical implementation of an enterprise agentic AI support solution.
 
-The Foundry specialist agent and Copilot Studio agent have been created, and the Foundry agent has been connected to Copilot Studio.
+The following capabilities have been implemented:
 
-MCP server development, external tool execution, Power Automate integration, Dataverse ticket management and end-to-end validation remain implementation tasks until independently tested.
+- Azure AI Foundry project and specialist troubleshooting agent.
+- Azure AI Search-backed support knowledge.
+- Copilot Studio conversational support agent.
+- Connected-agent delegation from Copilot Studio to Foundry.
+- Dataverse IT Support Ticket table.
+- Power Automate ticket-creation workflow.
+- Copilot Studio integration with the ticket-creation flow.
+- End-to-end ticket creation and Dataverse record verification.
+- Python MCP server with three tools.
+- Local MCP testing using STDIO and Streamable HTTP.
+- Automated MCP support-data tests.
 
-Features in the architecture and roadmap describe the intended system behavior, not necessarily completed functionality.
+The following capabilities remain future work:
+
+- Remote hosting of the MCP server.
+- Secure remote MCP connectivity.
+- Connecting MCP tools to the cloud-based agent.
+- Integrating MCP ticket operations with Dataverse.
+- Replacing synthetic service data with live monitoring information.
+
+The project separates working integrations from planned capabilities so that the implementation status is clear.
 
 ---
 
@@ -797,6 +1143,7 @@ This project brings together several important enterprise AI engineering concept
 - Responsible AI and safety guardrails.
 - Agent evaluation and observability.
 - End-to-end integration testing.
+- Dataverse solution management and Power Platform ALM.
 
 ---
 
