@@ -1,0 +1,5 @@
+<botcomponent_workflowset>
+  <botcomponent_workflow botcomponentid.schemaname="crccc_EnterpriseSupportAgent.action.Create_IT_Support_Ticket" workflowid.workflowid="d3bdc48f-6de6-f111-84ea-002248d65b84">
+    <iscustomizable>1</iscustomizable>
+  </botcomponent_workflow>
+</botcomponent_workflowset>

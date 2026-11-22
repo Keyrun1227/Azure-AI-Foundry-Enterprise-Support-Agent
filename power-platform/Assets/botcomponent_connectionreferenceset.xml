@@ -1,0 +1,8 @@
+<botcomponent_connectionreferenceset>
+  <botcomponent_connectionreference botcomponentid.schemaname="crccc_EnterpriseSupportAgent.action.EnterpriseSupportAgent" connectionreferenceid.connectionreferencelogicalname="crccc_EnterpriseSupportAgent.shared_azureagentservice.7f2dcda0be554c3c83ebac8e4c82a153">
+    <iscustomizable>1</iscustomizable>
+  </botcomponent_connectionreference>
+  <botcomponent_connectionreference botcomponentid.schemaname="crccc_EnterpriseSupportAgent.action.EnterpriseSupportAgent_iXI" connectionreferenceid.connectionreferencelogicalname="crccc_EnterpriseSupportAgent.shared_azureagentservice.7f2dcda0be554c3c83ebac8e4c82a153">
+    <iscustomizable>1</iscustomizable>
+  </botcomponent_connectionreference>
+</botcomponent_connectionreferenceset>

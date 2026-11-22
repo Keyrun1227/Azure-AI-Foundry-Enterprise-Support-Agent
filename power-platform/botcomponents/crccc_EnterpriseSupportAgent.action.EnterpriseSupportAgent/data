@@ -1,0 +1,17 @@
+kind: TaskDialog
+inputs:
+  - kind: ManualTaskInput
+    propertyName: AgentId
+    value: 1b4fd132-e1a1-42e0-9412-33438aa33124
+
+modelDisplayName: EnterpriseSupportAgent
+modelDescription: "Specialist enterprise IT support agent for network and connectivity troubleshooting.  Use this agent when employees ask about: - Internet and network connectivity - Wi-Fi and LAN issues - DHCP and IP configuration - DNS resolution - VPN connectivity - Windows network diagnostics - Enterprise troubleshooting procedures  This agent uses Azure AI Foundry and Azure AI Search knowledgebase47 to provide knowledge-grounded troubleshooting guidance.  Delegate technical troubleshooting and enterprise handbook questions to this agent.  Do not use this agent for greetings, general conversation or unrelated requests."
+action:
+  kind: InvokeExternalAgentTaskAction
+  connectionReference: crccc_EnterpriseSupportAgent.shared_azureagentservice.7f2dcda0be554c3c83ebac8e4c82a153
+  connectionProperties:
+    mode: Invoker
+
+  operationDetails:
+    kind: ActivityProtocolMetadata
+    operationId: SendActivityV2

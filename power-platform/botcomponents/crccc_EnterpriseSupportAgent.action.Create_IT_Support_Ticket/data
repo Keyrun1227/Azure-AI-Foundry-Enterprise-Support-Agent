@@ -1,0 +1,15 @@
+kind: TaskDialog
+response:
+  activity:
+  mode: Generated
+
+modelDescription: Creates an IT support ticket in the organization's Dataverse ticket register. Requires the ticket subject, issue description, category, priority, affected service, and location. Use only after collecting the required details and receiving employee confirmation. Returns the actual ticket reference, status, and creation result.
+action:
+  kind: InvokeFlowTaskAction
+  flowId: d3bdc48f-6de6-f111-84ea-002248d65b84
+  connectionProperties:
+    $kind: ConnectionProperties
+    diagnostics:
+    mode: Invoker
+
+outputMode: All

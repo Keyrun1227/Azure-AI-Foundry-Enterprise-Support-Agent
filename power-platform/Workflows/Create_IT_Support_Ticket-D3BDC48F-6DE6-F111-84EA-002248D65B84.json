@@ -1,0 +1,257 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "kfp_sharedcommondataserviceforapps_ad165"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "fac55eaa-411b-4e5d-86f8-ba6d7769f724"
+          },
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "title": "Ticket Subject",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_1": {
+                  "title": "Description",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_2": {
+                  "title": "Category",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT",
+                  "enum": [
+                    "Network",
+                    "VPN",
+                    "Email",
+                    "Application",
+                    "Hardware",
+                    "Software",
+                    "Access",
+                    "Other"
+                  ]
+                },
+                "text_3": {
+                  "title": "Priority",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT",
+                  "enum": [
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Critical"
+                  ]
+                },
+                "text_4": {
+                  "title": "Affected Service",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_5": {
+                  "title": "Location",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                }
+              },
+              "required": [
+                "text",
+                "text_1",
+                "text_2",
+                "text_3",
+                "text_4",
+                "text_5"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Register_Support_Ticket": {
+          "runAfter": {
+            "Determine_Request_Priority": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c1478f84-5fa7-4de7-af69-b206e9c324df"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "CreateRecord",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "kfp_itsupporttickets",
+              "item/kfp_category": "@variables('varCategory')",
+              "item/kfp_description": "@triggerBody()['text_1']",
+              "item/kfp_priority": "@variables('varPriority')",
+              "item/kfp_status": 843250000,
+              "item/kfp_affectedservice": "@triggerBody()['text_4']",
+              "item/kfp_location": "@triggerBody()['text_5']",
+              "item/kfp_ticketreference": "@concat('INC-', toUpper(substring(replace(guid(),'-',''),0,8)))",
+              "item/kfp_ticketsubject": "@triggerBody()['text']"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Initialize_Request_Category": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "16d27d61-4058-4549-b121-16ff4511b523"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCategory",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Initialize_Request_Priority": {
+          "runAfter": {
+            "Initialize_Request_Category": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "04cb822f-9f53-4f2b-869f-5ee5a0fb9654"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varPriority",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Confirm_Ticket_Registration": {
+          "runAfter": {
+            "Register_Support_Ticket": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c0611b6b-7a0d-44de-b4e8-f133bb35e265"
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "ticket_status": "New",
+              "ticket_id": "@outputs('Register_Support_Ticket')?['body/kfp_ticketreference']",
+              "confirmation_message": "Your support ticket has been created successfully.",
+              "ticket_created": "Yes"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ticket_status": {
+                  "title": "ticket_status",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                },
+                "ticket_id": {
+                  "title": "ticket_id",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                },
+                "confirmation_message": {
+                  "title": "confirmation_message",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                },
+                "ticket_created": {
+                  "title": "ticket_created",
+                  "x-ms-dynamically-added": true,
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "Determine_Request_Category": {
+          "runAfter": {
+            "Initialize_Request_Priority": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "30116f1f-5317-478f-bd05-4d6b7aee9501"
+          },
+          "type": "SetVariable",
+          "inputs": {
+            "name": "varCategory",
+            "value": "@if(equals(triggerBody()?['text_2'],'Network'),843250000,\r\nif(equals(triggerBody()?['text_2'],'VPN'),843250001,\r\nif(equals(triggerBody()?['text_2'],'Email'),843250002,\r\nif(equals(triggerBody()?['text_2'],'Application'),843250003,\r\nif(equals(triggerBody()?['text_2'],'Hardware'),843250004,\r\nif(equals(triggerBody()?['text_2'],'Software'),843250005,\r\nif(equals(triggerBody()?['text_2'],'Access'),843250006,\r\nif(equals(triggerBody()?['text_2'],'Other'),843250007,0))))))))"
+          }
+        },
+        "Determine_Request_Priority": {
+          "runAfter": {
+            "Determine_Request_Category": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "12b47d65-0b0b-4946-84e8-d497cc70515e"
+          },
+          "type": "SetVariable",
+          "inputs": {
+            "name": "varPriority",
+            "value": "@if(equals(triggerBody()?['text_3'],'Low'),843250000,\r\nif(equals(triggerBody()?['text_3'],'Medium'),843250001,\r\nif(equals(triggerBody()?['text_3'],'High'),843250002,\r\nif(equals(triggerBody()?['text_3'],'Critical'),843250003,0))))"
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

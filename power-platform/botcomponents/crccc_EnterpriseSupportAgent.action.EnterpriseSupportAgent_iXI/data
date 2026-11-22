@@ -1,0 +1,17 @@
+kind: TaskDialog
+inputs:
+  - kind: ManualTaskInput
+    propertyName: AgentId
+    value: EnterpriseSupportAgent
+
+modelDisplayName: EnterpriseSupportAgent 1
+modelDescription: Use EnterpriseSupportAgent to handle enterprise IT support requests, including troubleshooting network and internet connectivity, Wi-Fi and LAN issues, DHCP and IP configuration, DNS resolution, Windows network diagnostics, VPN and application connectivity, and answering questions from the internal IT support knowledge base.
+action:
+  kind: InvokeExternalAgentTaskAction
+  connectionReference: crccc_EnterpriseSupportAgent.shared_azureagentservice.7f2dcda0be554c3c83ebac8e4c82a153
+  connectionProperties:
+    mode: Invoker
+
+  operationDetails:
+    kind: ActivityProtocolMetadata
+    operationId: SendActivityV2

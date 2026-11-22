@@ -1,0 +1,10 @@
+<botcomponent schemaname="crccc_EnterpriseSupportAgent.gpt.default">
+  <componenttype>15</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>EnterpriseSupportAgent</name>
+  <parentbotid>
+    <schemaname>crccc_EnterpriseSupportAgent</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

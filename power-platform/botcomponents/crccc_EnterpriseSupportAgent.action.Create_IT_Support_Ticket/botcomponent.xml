@@ -1,0 +1,10 @@
+<botcomponent schemaname="crccc_EnterpriseSupportAgent.action.Create_IT_Support_Ticket">
+  <componenttype>9</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>Create_IT_Support_Ticket</name>
+  <parentbotid>
+    <schemaname>crccc_EnterpriseSupportAgent</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>
