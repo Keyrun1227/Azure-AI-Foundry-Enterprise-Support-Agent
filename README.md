@@ -193,8 +193,10 @@ The diagram represents the overall design. The MCP server is currently a separat
 **Service Status Tool**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/24baa665-3e27-4887-9cd6-dcccb2096430" width="75%" alt="MCP Service Status Tool">
+  <img src="https://github.com/user-attachments/assets/fb8dc7d5-78c4-41bf-bf9e-9a45a43d23de" width="75%" alt="MCP Service Status Tool">
 </p>
+
+
 
 **Create Support Ticket Tool**
 
