@@ -1,0 +1,32 @@
+{
+  "VPN": {
+    "status": "Degraded",
+    "message": "Synthetic demo data: intermittent VPN connection reports are recorded.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  },
+  "Wi-Fi": {
+    "status": "Operational",
+    "message": "Synthetic demo data: no active Wi-Fi incident is recorded.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  },
+  "DNS": {
+    "status": "Operational",
+    "message": "Synthetic demo data: no active DNS incident is recorded.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  },
+  "Email": {
+    "status": "Operational",
+    "message": "Synthetic demo data: no active email incident is recorded.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  },
+  "Internet": {
+    "status": "Degraded",
+    "message": "Synthetic demo data: simulated intermittent internet connectivity reports.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  },
+  "Business Application": {
+    "status": "Operational",
+    "message": "Synthetic demo data: no active application incident is recorded.",
+    "last_updated": "2026-11-22T08:00:00Z"
+  }
+}
