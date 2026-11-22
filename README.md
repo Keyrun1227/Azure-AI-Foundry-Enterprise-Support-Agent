@@ -24,6 +24,89 @@ Traditional IT support often involves employees searching documentation, contact
 
 This project explores an agentic approach where an AI assistant can understand an employee's problem, coordinate with a specialist AI agent, retrieve information from connected tools, guide the employee through safe troubleshooting and initiate support workflows when necessary.
 
+## Project Screenshots
+
+### Azure AI Foundry & Azure Resources
+
+**Foundry Specialist Agent**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ace0525c-23e1-4ebb-82b7-5577eafddc04" width="85%" alt="Foundry Specialist Agent">
+</p>
+
+**Azure Resource Group**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/946c8c8d-6807-41a9-aeec-bb9d80ec13fa" width="85%" alt="Azure Resource Group">
+</p>
+
+**Foundry IQ**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/764c4e10-179f-43e5-ad72-650db40d75c3" width="85%" alt="Foundry IQ">
+</p>
+
+**Azure AI Search**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c418e2cf-b017-45f4-a3d3-51ba01a83dae" width="85%" alt="Azure AI Search">
+</p>
+
+**Azure Storage Lake**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5b37c6c3-d545-41f8-a8f2-05ed41d2e53c" width="85%" alt="Azure Storage Lake">
+</p>
+
+### Copilot Studio Integration
+
+**Support Agent**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ef6d4238-00a0-4fd2-9779-6328fb847fc8" width="85%" alt="Copilot Studio Support Agent">
+</p>
+
+**Foundry Agent Delegation**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/81e3e772-9e38-4464-b067-ecda6f21487c" width="85%" alt="Copilot Studio Calling Foundry Agent">
+</p>
+
+**Power Automate Integration**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6b89dfb3-f130-45dc-9df7-9fbabcc8d295" width="85%" alt="Copilot Studio Calling Power Automate">
+</p>
+
+### Local MCP Server & Tool Testing
+
+**MCP Server — Local Execution**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/7fb2460d-e4ad-4198-b8a9-c39160db67bb" width="75%" alt="Local MCP Server">
+</p>
+
+**Service Status Tool**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/fb8dc7d5-78c4-41bf-bf9e-9a45a43d23de" width="75%" alt="MCP Service Status Tool">
+</p>
+
+
+
+**Create Support Ticket Tool**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a4ace8de-bd20-415e-98ac-1255421a3e22" width="75%" alt="MCP Create Support Ticket Tool">
+</p>
+
+**Get Ticket Status Tool**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a127a1ca-fa85-4352-a102-eea97e520d6e" width="75%" alt="MCP Get Ticket Status Tool">
+</p>
+
+
 The solution combines:
 
 - **Microsoft Copilot Studio** for conversational interaction and agent orchestration.
@@ -127,88 +210,6 @@ The agent should use connected tools for information that requires live retrieva
 ```
 
 The diagram represents the overall design. The MCP server is currently a separate local component and is not connected to the cloud agent.
-
-## Project Screenshots
-
-### Azure AI Foundry & Azure Resources
-
-**Foundry Specialist Agent**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ace0525c-23e1-4ebb-82b7-5577eafddc04" width="85%" alt="Foundry Specialist Agent">
-</p>
-
-**Azure Resource Group**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/946c8c8d-6807-41a9-aeec-bb9d80ec13fa" width="85%" alt="Azure Resource Group">
-</p>
-
-**Foundry IQ**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/764c4e10-179f-43e5-ad72-650db40d75c3" width="85%" alt="Foundry IQ">
-</p>
-
-**Azure AI Search**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/c418e2cf-b017-45f4-a3d3-51ba01a83dae" width="85%" alt="Azure AI Search">
-</p>
-
-**Azure Storage Lake**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/5b37c6c3-d545-41f8-a8f2-05ed41d2e53c" width="85%" alt="Azure Storage Lake">
-</p>
-
-### Copilot Studio Integration
-
-**Support Agent**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ef6d4238-00a0-4fd2-9779-6328fb847fc8" width="85%" alt="Copilot Studio Support Agent">
-</p>
-
-**Foundry Agent Delegation**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/81e3e772-9e38-4464-b067-ecda6f21487c" width="85%" alt="Copilot Studio Calling Foundry Agent">
-</p>
-
-**Power Automate Integration**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/6b89dfb3-f130-45dc-9df7-9fbabcc8d295" width="85%" alt="Copilot Studio Calling Power Automate">
-</p>
-
-### Local MCP Server & Tool Testing
-
-**MCP Server — Local Execution**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/7fb2460d-e4ad-4198-b8a9-c39160db67bb" width="75%" alt="Local MCP Server">
-</p>
-
-**Service Status Tool**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/fb8dc7d5-78c4-41bf-bf9e-9a45a43d23de" width="75%" alt="MCP Service Status Tool">
-</p>
-
-
-
-**Create Support Ticket Tool**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a4ace8de-bd20-415e-98ac-1255421a3e22" width="75%" alt="MCP Create Support Ticket Tool">
-</p>
-
-**Get Ticket Status Tool**
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a127a1ca-fa85-4352-a102-eea97e520d6e" width="75%" alt="MCP Get Ticket Status Tool">
-</p>
 
 
 ### Component Responsibilities
